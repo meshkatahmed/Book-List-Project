@@ -1,11 +1,11 @@
 //UI element
 let form = document.querySelector('#book-form');
-
+let bookList = document.querySelector('#book-list');
 
 
 //Event listeners
 form.addEventListener('submit',newBook);
-
+bookList.addEventListener('click',removeBook);
 
 //Functions
 function newBook(e){
@@ -13,16 +13,19 @@ function newBook(e){
     let author = document.querySelector('#author').value;
     let isbn = document.querySelector('#isbn').value;
 
-    let ui = new UI();
     if(title===''||author===''||isbn===''){
         ui.showAlert("Please fill all the fields!!",'error');
     } else{
         let book = new Book(title,author,isbn);
-        ui.addToBookList(book);
-        ui.clearFields();
-        ui.showAlert('Book added','success');
+        UI.addToBookList(book);
+        UI.clearFields();
+        UI.showAlert('Book added!!','success');
         
     }
+    e.preventDefault();
+}
+function removeBook(e){
+    UI.deleteFromBookList(e.target);
     e.preventDefault();
 }
 
@@ -37,7 +40,7 @@ class Book{
 //UI class
 class UI{
     
-    addToBookList(book){
+    static addToBookList(book){
         let list = document.querySelector('#book-list');
         let row = document.createElement('tr');
         row.innerHTML = `
@@ -47,12 +50,18 @@ class UI{
         <td><a href="#" class="delete">X</a></td>`;
         list.appendChild(row);
     }
-    clearFields(){
+    static deleteFromBookList(target){
+        if (target.hasAttribute('href')){
+            target.parentElement.parentElement.remove();
+            this.showAlert('Book removed!!','success');
+        }
+    }
+    static clearFields(){
         document.querySelector('#title').value = '';
         document.querySelector('#author').value = '';
         document.querySelector('#isbn').value = '';
     }
-    showAlert(message,className){
+    static showAlert(message,className){
         let div = document.createElement('div');
         div.className = `alert ${className}`;
         div.appendChild(document.createTextNode(message));
