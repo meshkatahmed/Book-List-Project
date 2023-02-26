@@ -2,11 +2,6 @@
 let form = document.querySelector('#book-form');
 let bookList = document.querySelector('#book-list');
 
-
-//Event listeners
-form.addEventListener('submit',newBook);
-bookList.addEventListener('click',removeBook);
-
 //Functions
 function newBook(e){
     let title = document.querySelector('#title').value;
@@ -20,7 +15,7 @@ function newBook(e){
         UI.addToBookList(book);
         UI.clearFields();
         UI.showAlert('Book added!!','success');
-        
+        Store.addBook(book);
     }
     e.preventDefault();
 }
@@ -29,6 +24,7 @@ function removeBook(e){
     e.preventDefault();
 }
 
+//Classes
 //Book class
 class Book{
     constructor(title,author,isbn){
@@ -53,8 +49,10 @@ class UI{
     static deleteFromBookList(target){
         if (target.hasAttribute('href')){
             target.parentElement.parentElement.remove();
+            Store.removeBook(target.parentElement.previousElementSibling.textContent.trim());
             this.showAlert('Book removed!!','success');
         }
+        
     }
     static clearFields(){
         document.querySelector('#title').value = '';
@@ -74,3 +72,42 @@ class UI{
         },3000);
     }
 }
+//Local Storage class
+class Store{
+    static getBooks(){
+        let books;
+        if(localStorage.getItem('books')===null){
+            books = [];
+        } else {
+            books = JSON.parse(localStorage.getItem('books'));
+        }
+        return books;
+    }
+    static addBook(book){
+        let books = this.getBooks();
+        books.push(book);
+
+        localStorage.setItem('books',JSON.stringify(books));
+    }
+    static displayBooks(){
+        let books = Store.getBooks();
+
+        books.forEach(book => {
+            UI.addToBookList(book);
+        });
+    }
+    static removeBook(isbn){
+        let books = Store.getBooks();
+        books.forEach((book,index) => {
+            if(book.isbn===isbn){
+                books.splice(index,1);
+            }
+        })
+        localStorage.setItem('books',JSON.stringify(books));
+    }
+}
+
+//Event listeners
+form.addEventListener('submit',newBook);
+bookList.addEventListener('click',removeBook);
+document.addEventListener('DOMContentLoaded',Store.displayBooks);
